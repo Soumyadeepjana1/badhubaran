@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কার্ট - বধূবরণ</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .cart-container { display: flex; gap: 30px; margin-top: 40px; margin-bottom: 60px; }
+        .cart-items { flex: 2; background: var(--color-white); padding: 30px; border-radius: 8px; box-shadow: var(--shadow-sm); }
+        .cart-summary { flex: 1; background: var(--color-white); padding: 30px; border-radius: 8px; box-shadow: var(--shadow-sm); height: fit-content; }
+        .cart-item { display: flex; gap: 20px; border-bottom: 1px solid #eee; padding: 20px 0; align-items: center; }
+        .cart-item-img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;}
+        .cart-item-info { flex: 1; }
+        .cart-item-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn { width: 30px; height: 30px; cursor: pointer; background: var(--color-bg); border: 1px solid #ccc; font-weight: bold;}
+        .remove-btn { color: var(--color-primary); cursor: pointer; font-size: 20px; border: none; background: transparent;}
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px; }
+        .summary-total { font-size: 20px; font-weight: bold; border-top: 2px solid var(--color-bg); padding-top: 15px; margin-top: 15px; }
+        .empty-cart { text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo-text">বধূবরণ</a>
+            <div class="nav-actions">
+                <a href="products.html" class="nav-icon" style="font-size:16px; font-weight:bold;">দোকান (Shop)</a>
+                <a href="wishlist.html" class="nav-icon"><i class="ph ph-heart"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 style="margin-top: 40px; border-bottom: 2px solid var(--color-primary); display: inline-block; padding-bottom: 5px;">আপনার কার্ট</h2>
+        <div class="cart-container" id="cart-root">
+            <!-- Injected by JS -->
+        </div>
+    </div>
+
+    <!-- Login rules: user must be logged in to be on this page effectively. 
+         app.js redirects if not logged in. Wait, we allowed adding if logged in, 
+         so if they are here they have items or they are guest. Let's make sure. -->
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!App.State.user) {
+                // Must be logged in to view cart contents properly according to requirements
+                document.getElementById('cart-root').innerHTML = `
+                    <div class="empty-cart" style="width:100%">
+                        <h3>কার্ট দেখতে রেজিস্ট্রেশন বা লগইন করুন</h3>
+                        <br><a href="index.html" class="btn btn-primary">ফিরে যান</a>
+                    </div>
+                `;
+                return;
+            }
+            renderCart();
+        });
+
+        function changeCartQty(id, delta) {
+            const item = App.State.cart.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    App.State.cart = App.State.cart.filter(i => i.id !== id);
+                }
+                saveState();
+                renderCart();
+            }
+        }
+
+        function removeCartItem(id) {
+            App.State.cart = App.State.cart.filter(i => i.id !== id);
+            saveState();
+            renderCart();
+        }
+
+        function renderCart() {
+            const root = document.getElementById('cart-root');
+            const cart = App.State.cart;
+
+            if (cart.length === 0) {
+                root.innerHTML = `
+                    <div class="empty-cart" style="width:100%">
+                        <i class="ph ph-shopping-cart" style="font-size: 60px; color: #ccc; margin-bottom:20px;"></i>
+                        <h3>আপনার কার্ট খালি!</h3>
+                        <p style="margin-bottom: 20px; color:#666;">আসুন কিছু কেনাকাটা করি।</p>
+                        <a href="products.html" class="btn btn-secondary">পণ্য দেখুন</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let subtotal = 0;
+            const itemsHtml = cart.map(item => {
+                subtotal += item.price * item.qty;
+                return `
+                    <div class="cart-item">
+                        <img src="${item.image}" class="cart-item-img">
+                        <div class="cart-item-info">
+                            <div class="cart-item-title">${item.name_bn}</div>
+                            <div style="font-weight: bold; color: var(--color-primary); margin-bottom: 10px;">₹${item.price}</div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="changeCartQty(${item.id}, -1)">-</button>
+                                <span>${item.qty}</span>
+                                <button class="qty-btn" onclick="changeCartQty(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                        <button class="remove-btn" onclick="removeCartItem(${item.id})"><i class="ph ph-trash"></i></button>
+                    </div>
+                `;
+            }).join('');
+
+            const delivery = subtotal > 999 ? 0 : 50;
+            const total = subtotal + delivery;
+
+            root.innerHTML = `
+                <div class="cart-items">
+                    ${itemsHtml}
+                </div>
+                <div class="cart-summary">
+                    <h3 style="margin-bottom: 20px;">অর্ডার সামারি</h3>
+                    <div class="summary-row"><span>মোট মূল্য:</span> <span>₹${subtotal}</span></div>
+                    <div class="summary-row"><span>ডেলিভারি চার্জ:</span> <span>${delivery === 0 ? 'ফ্রি' : '₹'+delivery}</span></div>
+                    <div class="summary-row summary-total"><span>সর্বমোট:</span> <span>₹${total}</span></div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="checkout()">চেকআউট করুন</button>
+                </div>
+            `;
+        }
+
+        function checkout() {
+            alert('This is a demonstration! Thank you for ordering from Badhubaran.');
+            App.State.cart = [];
+            saveState();
+            renderCart();
+        }
+    </script>
+</body>
+</html>

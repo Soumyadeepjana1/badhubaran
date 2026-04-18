@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>উইশলিস্ট - বধূবরণ</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo-text">বধূবরণ</a>
+            <div class="nav-actions">
+                <a href="products.html" class="nav-icon" style="font-size:16px; font-weight:bold;">দোকান (Shop)</a>
+                <a href="cart.html" class="nav-icon">
+                    <i class="ph ph-shopping-cart"></i><span class="badge" id="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 style="margin-top: 40px; border-bottom: 2px solid var(--color-primary); display: inline-block; padding-bottom: 5px;">আপনার উইশলিস্ট</h2>
+        
+        <div class="product-grid" id="wishlist-root" style="margin-top: 30px; margin-bottom: 60px;">
+            <!-- JS -->
+        </div>
+    </div>
+
+    <script src="/static/js/db.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+             if (!App.State.user) {
+                document.getElementById('wishlist-root').innerHTML = `
+                    <div style="text-align:center; padding:50px; grid-column: 1/-1;">
+                        <h3>উইশলিস্ট দেখতে রেজিস্ট্রেশন বা লগইন করুন</h3>
+                        <br><a href="index.html" class="btn btn-primary">ফিরে যান</a>
+                    </div>
+                `;
+                return;
+            }
+            await window.DB.initDB();
+            renderWishlist();
+        });
+
+        function renderWishlist() {
+            const root = document.getElementById('wishlist-root');
+            const wishlistIds = App.State.wishlist;
+
+            if (wishlistIds.length === 0) {
+                root.innerHTML = `
+                    <div style="text-align:center; padding: 50px; grid-column: 1/-1;">
+                        <i class="ph ph-heart" style="font-size: 60px; color: #ccc; margin-bottom:20px;"></i>
+                        <h3>আপনার উইশলিস্ট খালি!</h3>
+                        <br><a href="products.html" class="btn btn-secondary">পণ্য দেখুন</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Map IDs to product data
+            const products = window.DB.getAllProducts();
+            const items = products.filter(p => wishlistIds.includes(p.id));
+
+            root.innerHTML = items.map(p => `
+                <div class="product-card">
+                    <button class="product-wishlist-btn active" onclick="event.stopPropagation(); App.toggleWishlist(${p.id}); renderWishlist();">
+                        <i class="ph-fill ph-heart"></i>
+                    </button>
+                    <div class="product-image-wrapper" onclick="location.href='product.html?id=${p.id}'" style="cursor:pointer;">
+                        <img src="${p.image_url}" alt="${p.name_bn}" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${p.name_bn}</h3>
+                        <div class="product-price-row">
+                            <span class="price">₹${p.price}</span>
+                        </div>
+                        <button class="btn btn-outline" onclick="App.addToCart({id: ${p.id}, name_bn: '${p.name_bn}', price: ${p.price}, image: '${p.image_url}'}); App.toggleWishlist(${p.id}); renderWishlist();">কার্টে মুভ করুন</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

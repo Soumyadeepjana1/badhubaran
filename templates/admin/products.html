@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Products - Badhubaran</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <h2>বধূবরণ Admin</h2>
+            <div class="admin-nav">
+                <a href="index.html"><i class="ph ph-squares-four"></i> Dashboard</a>
+                <a href="products.html" class="active"><i class="ph ph-package"></i> Products</a>
+                <a href="#" onclick="logoutAdmin()"><i class="ph ph-sign-out"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="admin-content">
+            <div class="admin-header-mobile">
+                <h1>Products</h1>
+                <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name (BN)</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div class="admin-modal" id="product-modal">
+        <div class="admin-modal-content">
+            <h2 id="modal-title" style="margin-bottom: 20px;">Add New Product</h2>
+            <form id="product-form">
+                <input type="hidden" id="p-id">
+                
+                <div class="form-group">
+                    <label>Image (Upload)</label>
+                    <input type="file" id="p-img-file" class="form-control" accept="image/*">
+                    <div id="p-img-preview" style="margin-top:10px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Name (Bengali) *</label>
+                    <input type="text" id="p-bn" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Name (English) *</label>
+                    <input type="text" id="p-en" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="p-cat" class="form-control">
+                        <option value="Shankha & Pola">Shankha & Pola</option>
+                        <option value="Sindoor & Jewelry">Sindoor & Jewelry</option>
+                        <option value="Clothes">Dhuti & Saree</option>
+                        <option value="Puja Items">Puja Items</option>
+                        <option value="Decoration">Decoration</option>
+                        <option value="Gifts">Gifts</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:1">
+                        <label>Price (₹)</label>
+                        <input type="number" id="p-price" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label>MRP (₹)</label>
+                        <input type="number" id="p-mrp" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label>Stock</label>
+                        <input type="number" id="p-stock" class="form-control" value="10">
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; gap: 20px;">
+                    <label><input type="checkbox" id="p-feat"> Featured Product</label>
+                    <label><input type="checkbox" id="p-sale"> On Sale</label>
+                </div>
+
+                <div style="display:flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/db.js"></script>
+    <script>
+        if(!sessionStorage.getItem('admin_logged_in')) window.location.href = 'login.html';
+        
+        function logoutAdmin() {
+            sessionStorage.removeItem('admin_logged_in');
+            window.location.href = 'login.html';
+        }
+
+        let selectedFile = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.DB.initDB();
+            loadTable();
+
+            document.getElementById('p-img-file').addEventListener('change', function(e){
+                selectedFile = e.target.files[0];
+                if(selectedFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        document.getElementById('p-img-preview').innerHTML = `<img src="${evt.target.result}" style="max-width:100px; border-radius:4px;">`;
+                    };
+                    reader.readAsDataURL(selectedFile);
+                }
+            });
+
+            document.getElementById('product-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveProduct();
+            });
+        });
+
+        function loadTable() {
+            const products = window.DB.getAllProducts();
+            const tbody = document.getElementById('product-table-body');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td><img src="${p.image_url}" class="pr-img"></td>
+                    <td>${p.name_bn}</td>
+                    <td>${p.category}</td>
+                    <td>₹${p.price}</td>
+                    <td>${p.stock}</td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 5px 10px; margin-right: 5px;" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn btn-outline" style="padding: 5px 10px;" onclick="deleteProduct(${p.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('product-form').reset();
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-img-preview').innerHTML = '';
+            selectedFile = null;
+            document.getElementById('modal-title').innerText = 'Add New Product';
+            document.getElementById('save-btn').innerText = 'Save Product';
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        function editProduct(id) {
+            const product = window.DB.getProductById(id);
+            if (!product) return;
+            
+            document.getElementById('product-form').reset();
+            document.getElementById('p-id').value = product.id;
+            document.getElementById('p-bn').value = product.name_bn;
+            document.getElementById('p-en').value = product.name_en;
+            document.getElementById('p-cat').value = product.category;
+            document.getElementById('p-price').value = product.price;
+            document.getElementById('p-mrp').value = product.mrp;
+            document.getElementById('p-stock').value = product.stock;
+            document.getElementById('p-feat').checked = product.is_featured === 1;
+            document.getElementById('p-sale').checked = product.is_sale === 1;
+            
+            selectedFile = null;
+            document.getElementById('p-img-preview').innerHTML = `<img src="${product.image_url}" style="max-width:100px; border-radius:4px;">`;
+            
+            document.getElementById('modal-title').innerText = 'Edit Product';
+            document.getElementById('save-btn').innerText = 'Update Product';
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.remove('active');
+        }
+
+        async function saveProduct() {
+            const pId = document.getElementById('p-id').value;
+            const formData = new FormData();
+            formData.append('name_bn', document.getElementById('p-bn').value);
+            formData.append('name_en', document.getElementById('p-en').value);
+            formData.append('category', document.getElementById('p-cat').value);
+            formData.append('price', document.getElementById('p-price').value);
+            formData.append('mrp', document.getElementById('p-mrp').value || document.getElementById('p-price').value);
+            formData.append('stock', document.getElementById('p-stock').value || 10);
+            formData.append('is_featured', document.getElementById('p-feat').checked);
+            formData.append('is_sale', document.getElementById('p-sale').checked);
+
+            if (selectedFile) {
+                formData.append('image', selectedFile);
+            }
+
+            try {
+                let url = '/api/products';
+                let method = 'POST';
+                if (pId) {
+                    url = '/api/products/' + pId;
+                    method = 'PUT';
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+
+                if (response.ok) {
+                    await window.DB.initDB();
+                    loadTable();
+                    closeModal();
+                    alert(pId ? 'Product Updated!' : 'Product Saved! View it on the Customer Frontend site.');
+                } else {
+                    alert('Error saving product.');
+                }
+            } catch (error) {
+                console.error("Save product error", error);
+                alert("Request failed.");
+            }
+        }
+
+        async function deleteProduct(id) {
+            if(confirm('Are you sure you want to delete this product?')) {
+                try {
+                    const response = await fetch('/api/products/' + id, { method: 'DELETE' });
+                    if(response.ok) {
+                        await window.DB.initDB();
+                        loadTable();
+                    }
+                } catch(e) {
+                    alert('Error deleting product');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

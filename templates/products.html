@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সকল পণ্য - বধূবরণ</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        .shop-container { display: flex; gap: 30px; margin-top: 40px; }
+        .sidebar { width: 250px; flex-shrink: 0; background: var(--color-white); padding: 20px; border-radius: 8px; box-shadow: var(--shadow-sm); height: fit-content; }
+        .shop-main { flex-grow: 1; }
+        .filter-group { margin-bottom: 20px; }
+        .filter-title { font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid var(--color-bg); padding-bottom: 5px; }
+        .filter-item { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--color-white); padding: 15px; border-radius: 8px; box-shadow: var(--shadow-sm);}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo-text">বধূবরণ</a>
+            <div class="nav-actions">
+                <a href="index.html" class="nav-icon" style="font-size:16px; font-weight:bold;">হোম</a>
+                <a href="wishlist.html" class="nav-icon"><i class="ph ph-heart"></i></a>
+                <a href="cart.html" class="nav-icon">
+                    <i class="ph ph-shopping-cart"></i><span class="badge" id="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container shop-container">
+        <aside class="sidebar">
+            <div class="filter-group">
+                <div class="filter-title">বিভাগ (Category)</div>
+                <label class="filter-item"><input type="radio" name="cat" value="all" checked> সমস্ত (All)</label>
+                <label class="filter-item"><input type="radio" name="cat" value="Shankha & Pola"> শাঁখা ও পলা</label>
+                <label class="filter-item"><input type="radio" name="cat" value="Sindoor & Jewelry"> সিঁদুর ও গহনা</label>
+                <label class="filter-item"><input type="radio" name="cat" value="Decoration"> সাজসজ্জা</label>
+            </div>
+            <div class="filter-group">
+                <div class="filter-title">সাজানো (Sort By)</div>
+                <select id="sort-select" class="form-control">
+                    <option value="new">নতুন পণ্য</option>
+                    <option value="price-asc">দাম: কম থেকে বেশি</option>
+                    <option value="price-desc">দাম: বেশি থেকে কম</option>
+                </select>
+            </div>
+        </aside>
+
+        <main class="shop-main">
+            <div class="shop-header">
+                <h2 id="page-title">সমস্ত পণ্য</h2>
+                <div id="product-count">0 items found</div>
+            </div>
+            
+            <div class="product-grid" id="products-grid">
+                <!-- Injected via JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/db.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        let allProducts = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.DB.initDB();
+            allProducts = window.DB.getAllProducts();
+            
+            // Check URL query
+            const urlParams = new URLSearchParams(window.location.search);
+            const cat = urlParams.get('cat');
+            if (cat) {
+                const map = { 'shankha': 'Shankha & Pola', 'sindoor': 'Sindoor & Jewelry', 'decor': 'Decoration' };
+                if(map[cat]) {
+                    document.querySelector(`input[value="${map[cat]}"]`).checked = true;
+                }
+            }
+
+            renderProducts();
+
+            // Bind filters
+            document.querySelectorAll('input[name="cat"]').forEach(radio => radio.addEventListener('change', renderProducts));
+            document.getElementById('sort-select').addEventListener('change', renderProducts);
+        });
+
+        function renderProducts() {
+            const cat = document.querySelector('input[name="cat"]:checked').value;
+            const sort = document.getElementById('sort-select').value;
+            
+            let filtered = allProducts;
+            if (cat !== 'all') {
+                filtered = allProducts.filter(p => p.category === cat);
+            }
+
+            if (sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
+            else if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+
+            document.getElementById('product-count').innerText = `${filtered.length} টি পণ্য পাওয়া গেছে`;
+            const grid = document.getElementById('products-grid');
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p>কোনো পণ্য পাওয়া যায়নি।</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    ${p.is_sale ? '<span class="product-badge">SALE</span>' : ''}
+                    <button class="product-wishlist-btn ${App.isInWishlist(p.id) ? 'active' : ''}" onclick="event.stopPropagation(); App.toggleWishlist(${p.id}); this.classList.toggle('active')">
+                        <i class="ph-fill ph-heart"></i>
+                    </button>
+                    <div class="product-image-wrapper" onclick="location.href='product.html?id=${p.id}'" style="cursor:pointer;">
+                        <img src="${p.image_url}" alt="${p.name_bn}" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${p.name_bn}</h3>
+                        <div class="product-title-en">${p.name_en}</div>
+                        <div class="product-price-row">
+                            <span class="price">₹${p.price}</span>
+                            ${p.mrp > p.price ? `<span class="mrp">₹${p.mrp}</span><span class="discount">${Math.round((p.mrp-p.price)/p.mrp*100)}% OFF</span>` : ''}
+                        </div>
+                        <button class="btn btn-outline" onclick="App.addToCart({id: ${p.id}, name_bn: '${p.name_bn}', price: ${p.price}, image: '${p.image_url}'})">কার্টে যোগ করুন</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

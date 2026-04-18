@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Badhubaran</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <h2>বধূবরণ Admin</h2>
+            <div class="admin-nav">
+                <a href="index.html" class="active"><i class="ph ph-squares-four"></i> Dashboard</a>
+                <a href="products.html"><i class="ph ph-package"></i> Products</a>
+                <a href="#" onclick="logoutAdmin()"><i class="ph ph-sign-out"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="admin-content">
+            <h1 style="margin-bottom: 20px;">Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Products</div>
+                    <div class="stat-val" id="total-products">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Orders (Mock)</div>
+                    <div class="stat-val">124</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Revenue (Mock)</div>
+                    <div class="stat-val">₹ 45,200</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Store Views (Mock)</div>
+                    <div class="stat-val">1.2K</div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h3>Quick Actions</h3>
+                <br>
+                <a href="products.html" class="btn btn-primary">Manage Products</a>
+                <a href="../index.html" target="_blank" class="btn btn-outline">View Shop Frontend</a>
+            </div>
+        </main>
+    </div>
+
+    
+    <script src="/static/js/db.js"></script>
+    <script>
+        if(!sessionStorage.getItem('admin_logged_in')){
+            window.location.href = 'login.html';
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('admin_logged_in');
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.DB.initDB();
+            const products = window.DB.getAllProducts();
+            document.getElementById('total-products').innerText = products.length;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বধূবরণ - Authentic Bengali Wedding Items</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+</head>
+<body>
+
+    <div class="top-strip">
+        ১০০% খাঁটি বাঙালি বিবাহের সামগ্রী | ৯৯৯ টাকার অর্ডারে ফ্রি ডেলিভারি
+    </div>
+
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo-text">বধূবরণ</a>
+            
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="পণ্য খুঁজুন (Search for products)...">
+                <button class="search-btn"><i class="ph ph-magnifying-glass"></i></button>
+            </div>
+
+            <div class="nav-actions">
+                <a href="admin/login.html" class="btn btn-primary" style="margin-right: 15px; padding: 5px 15px; font-size: 14px;">Admin Portal</a>
+                <div id="user-menu"></div>
+                <a href="wishlist.html" class="nav-icon"><i class="ph ph-heart"></i></a>
+                <a href="cart.html" class="nav-icon">
+                    <i class="ph ph-shopping-cart"></i>
+                    <span class="badge" id="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-slide active" style="background-image: url('/static/images/hero_banner_1.png');">
+                <div class="hero-content">
+                    <h1>বিবাহের প্রতিটি মুহূর্তকে অর্থবহ করুন</h1>
+                    <p style="font-size: 20px; margin-bottom: 30px;">ঐতিহ্যবাহী বাঙালি বিয়ের খাঁটি সামগ্রী</p>
+                    <a href="products.html" class="btn btn-secondary">শপিং শুরু করুন</a>
+                </div>
+            </div>
+            <!-- More slides could be added here -->
+        </section>
+
+        <div class="container">
+            <h2 class="section-title">পণ্য বিভাগ (Categories)</h2>
+            <div class="category-grid">
+                <div class="category-item" onclick="location.href='products.html?cat=puja'">
+                    <i class="ph ph-flower-lotus category-icon"></i>
+                    <div class="category-name">পূজা সামগ্রী</div>
+                </div>
+                <div class="category-item" onclick="location.href='products.html?cat=shankha'">
+                    <i class="ph ph-circles-three category-icon"></i>
+                    <div class="category-name">শাঁখা ও পলা</div>
+                </div>
+                <div class="category-item" onclick="location.href='products.html?cat=sindoor'">
+                    <i class="ph ph-diamond category-icon"></i>
+                    <div class="category-name">সিঁদুর ও গহনা</div>
+                </div>
+                <div class="category-item" onclick="location.href='products.html?cat=dress'">
+                    <i class="ph ph-t-shirt category-icon"></i>
+                    <div class="category-name">ধুতি ও শাড়ি</div>
+                </div>
+                <div class="category-item" onclick="location.href='products.html?cat=decor'">
+                    <i class="ph ph-crown category-icon"></i>
+                    <div class="category-name">সাজসজ্জা</div>
+                </div>
+            </div>
+
+            <div class="alpona-divider"></div>
+
+            <h2 class="section-title">বিশেষ অফার (Featured Products)</h2>
+            <div class="product-grid" id="featured-products">
+                <!-- Products injected by JS -->
+            </div>
+        </div>
+    </main>
+
+    <div class="alpona-divider" style="margin-top: 80px;"></div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal">
+            <span class="close-modal" onclick="closeModals()"><i class="ph ph-x"></i></span>
+            <h3 style="margin-bottom: 20px; text-align: center;">লগইন করুন</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>ইমেইল (Email)</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="আপনার ইমেইল দিন" required>
+                </div>
+                <div class="form-group">
+                    <label>পাসওয়ার্ড (Password)</label>
+                    <input type="password" class="form-control" placeholder="পাসওয়ার্ড দিন" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">লগইন (Login)</button>
+                <div style="text-align: center; margin-top: 15px; font-size: 14px;">
+                    অ্যাকাউন্ট নেই? <a href="#" style="color: var(--color-primary); font-weight: bold;">রেজিস্টার করুন</a> <br><br>
+                    <a href="admin/login.html" style="color: var(--color-text-light);">অ্যাডমিন প্যানেল</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <div class="logo-text" style="color: var(--color-bg); margin-bottom: 20px;">বধূবরণ</div>
+                <p style="font-size: 14px; opacity: 0.8;">বাঙালি বিবাহের ঐতিহ্যবাহী সামগ্রীর নির্ভরযোগ্য প্রতিষ্ঠান।</p>
+            </div>
+            <div class="footer-col">
+                <h3>কুইক লিঙ্ক</h3>
+                <ul>
+                    <li><a href="index.html">হোম</a></li>
+                    <li><a href="products.html">সমস্ত পণ্য</a></li>
+                    <li><a href="#">আমাদের সম্পর্কে</a></li>
+                    <li><a href="#">যোগাযোগ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>সাহায্য</h3>
+                <ul>
+                    <li><a href="#">শিপিং পলিসি</a></li>
+                    <li><a href="#">রিফান্ড পলিসি</a></li>
+                    <li><a href="#">গোপনীয়তা নীতি</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; ২০২৬ বধূবরণ। সর্বস্বত্ব সংরক্ষিত।
+        </div>
+    </footer>
+
+    <script src="/static/js/db.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.DB.initDB();
+            loadFeaturedProducts();
+        });
+
+        function loadFeaturedProducts() {
+            const products = window.DB.getAllProducts();
+            const featured = products.filter(p => p.is_featured === 1 || p.is_featured === true).slice(0, 4);
+            const grid = document.getElementById('featured-products');
+            
+            if (featured.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">কোন পণ্য পাওয়া যায়নি।</p>';
+                return;
+            }
+
+            grid.innerHTML = featured.map(p => `
+                <div class="product-card">
+                    ${p.is_sale ? '<span class="product-badge">SALE</span>' : ''}
+                    <button class="product-wishlist-btn ${App.isInWishlist(p.id) ? 'active' : ''}" onclick="event.stopPropagation(); App.toggleWishlist(${p.id}); this.classList.toggle('active')">
+                        <i class="ph-fill ph-heart"></i>
+                    </button>
+                    <div class="product-image-wrapper" onclick="location.href='product.html?id=${p.id}'" style="cursor:pointer;">
+                        <img src="${p.image_url}" alt="${p.name_bn}" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${p.name_bn}</h3>
+                        <div class="product-title-en">${p.name_en}</div>
+                        <div class="product-price-row">
+                            <span class="price">₹${p.price}</span>
+                            ${p.mrp > p.price ? `<span class="mrp">₹${p.mrp}</span><span class="discount">${Math.round((p.mrp-p.price)/p.mrp*100)}% OFF</span>` : ''}
+                        </div>
+                        <button class="btn btn-outline" onclick="App.addToCart({id: ${p.id}, name_bn: '${p.name_bn}', price: ${p.price}, image: '${p.image_url}'})">কার্টে যোগ করুন</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
